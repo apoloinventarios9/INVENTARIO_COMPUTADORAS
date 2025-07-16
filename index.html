@@ -386,7 +386,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- Modal para escanear código con cámara -->
+<!-- Modal para escanear código con cámara (nuevo enfoque) -->
 <div class="modal fade" id="scannerModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
@@ -397,10 +397,12 @@ window.addEventListener('DOMContentLoaded', () => {
         </button>
       </div>
       <div class="modal-body text-center">
-        <div id="qr-reader" style="width: 100%;"></div>
+        <video id="barcodeVideo" autoplay playsinline style="width:100%;max-height:300px;border:1px solid #ccc;border-radius:6px;"></video>
+        <canvas id="barcodeCanvas" style="display:none;"></canvas>
         <div id="camera-permission-msg" class="text-danger mt-2" style="display:none;">
           Debe permitir el acceso a la cámara para escanear el código.
         </div>
+        <div id="barcode-result" class="mt-2 font-weight-bold text-success"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal" style="font-size: 12px;">Cerrar</button>
@@ -409,73 +411,73 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
+<!-- Incluye la librería ZXing para escaneo de códigos de barras y QR -->
+<script src="https://unpkg.com/@zxing/library@0.19.2/umd/index.min.js"></script>
 <script>
-// Guía por tipo de equipo
-const typeGuides = {
-  "Laptops": "Ejemplo: Dell Latitude 5420, Lenovo ThinkPad, HP EliteBook",
-  "Computadoras de escritorio": "Ejemplo: CPU Dell Optiplex, HP ProDesk, con monitor, mouse y teclado",
-  "Monitores adicionales": "Ejemplo: Monitor Samsung 24'', LG LED, Dell LCD",
-  "Teclados y Mouse": "Ejemplo: Teclado Logitech inalámbrico, Mouse HP USB",
-  "No-breaks / UPS": "Ejemplo: APC 650VA, Forza 1000VA",
-  "Impresoras multifunción": "Ejemplo: HP LaserJet Pro MFP, Epson EcoTank",
-  "Escáneres": "Ejemplo: Epson Perfection, Canon Lide",
-  "Lectores de código de barras": "Ejemplo: Honeywell Voyager, Zebra DS2208",
-  "Impresoras de etiquetas": "Ejemplo: Zebra GK420t, Brother QL-800",
-  "Terminales portátiles (PDA)": "Ejemplo: Zebra TC21, Honeywell Dolphin",
-  "Tablets / dispositivos móviles": "Ejemplo: Samsung Galaxy Tab, iPad",
-  "Relojes biométricos": "Ejemplo: ZKTeco MB360, Anviz FaceDeep",
-  "Teléfonos IP / inalámbricos": "Ejemplo: Cisco SPA504G, Panasonic KX-TG",
-  "Radios de comunicación": "Ejemplo: Motorola Talkabout, Kenwood TK-3402",
-  "Ruteadores / Switches": "Ejemplo: Cisco Catalyst 2960, TP-Link Archer",
-  "Cámaras de seguridad (CCTV)": "Ejemplo: Hikvision DS-2CD, Dahua HDCVI",
-  "Otro": "Describa el producto lo más detallado posible"
-};
+let barcodeStream = null;
+let barcodeCodeReader = null;
+let barcodeScanTarget = null;
 
-// Actualiza la guía según el tipo seleccionado
-function onTypeChange() {
-  const type = document.getElementById('productType').value;
-  document.getElementById('typeHelp').textContent = typeGuides[type] || '';
-}
-
-// Escaneo con cámara (usa html5-qrcode)
-let html5QrCodeInstance = null;
-let currentScanTarget = null;
 function openScanner(targetInputId) {
-  currentScanTarget = targetInputId;
+  barcodeScanTarget = targetInputId;
+  document.getElementById('barcode-result').textContent = '';
   document.getElementById('camera-permission-msg').style.display = 'none';
   $('#scannerModal').modal('show');
 }
-$('#scannerModal').on('shown.bs.modal', function () {
-  if (html5QrCodeInstance) {
-    html5QrCodeInstance.stop().then(()=>html5QrCodeInstance.clear()).catch(()=>{});
+
+$('#scannerModal').on('shown.bs.modal', async function () {
+  const video = document.getElementById('barcodeVideo');
+  // Detén cualquier stream anterior
+  if (barcodeStream) {
+    barcodeStream.getTracks().forEach(track => track.stop());
+    barcodeStream = null;
   }
-  html5QrCodeInstance = new Html5Qrcode("qr-reader");
-  html5QrCodeInstance.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    (decodedText) => {
-      document.getElementById(currentScanTarget).value = decodedText;
-      html5QrCodeInstance.stop().then(()=>html5QrCodeInstance.clear()).catch(()=>{});
-      $('#scannerModal').modal('hide');
-    },
-    (errorMessage) => {
-      // Si ocurre un error de permisos, muestra mensaje
-      if (errorMessage && errorMessage.toLowerCase().includes('permission')) {
+  // Inicializa el lector
+  barcodeCodeReader = new ZXing.BrowserMultiFormatReader();
+  try {
+    // Solicita la cámara trasera si está disponible
+    barcodeStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false
+    });
+    video.srcObject = barcodeStream;
+    video.setAttribute('playsinline', true);
+    video.play();
+
+    // Escaneo en tiempo real
+    barcodeCodeReader.decodeFromVideoDevice(null, 'barcodeVideo', (result, err) => {
+      if (result) {
+        document.getElementById('barcode-result').textContent = "Código detectado: " + result.text;
+        document.getElementById(barcodeScanTarget).value = result.text;
+        // Detener escaneo y cerrar modal
+        barcodeCodeReader.reset();
+        if (barcodeStream) {
+          barcodeStream.getTracks().forEach(track => track.stop());
+          barcodeStream = null;
+        }
+        setTimeout(() => { $('#scannerModal').modal('hide'); }, 700);
+      }
+      if (err && err.name === 'NotAllowedError') {
         document.getElementById('camera-permission-msg').style.display = '';
       }
-    }
-  ).catch(() => {
+    });
+  } catch (e) {
     document.getElementById('camera-permission-msg').style.display = '';
-    Swal.fire('Error', 'No se pudo acceder a la cámara. Permita el acceso en su dispositivo.', 'error');
-    $('#scannerModal').modal('hide');
-  });
-});
-$('#scannerModal').on('hidden.bs.modal', function () {
-  if (html5QrCodeInstance) {
-    html5QrCodeInstance.stop().then(()=>html5QrCodeInstance.clear()).catch(()=>{});
-    html5QrCodeInstance = null;
+    document.getElementById('barcode-result').textContent = '';
   }
+});
+
+$('#scannerModal').on('hidden.bs.modal', function () {
+  if (barcodeCodeReader) {
+    barcodeCodeReader.reset();
+  }
+  if (barcodeStream) {
+    barcodeStream.getTracks().forEach(track => track.stop());
+    barcodeStream = null;
+  }
+  document.getElementById('barcodeVideo').srcObject = null;
+  document.getElementById('barcode-result').textContent = '';
+  document.getElementById('camera-permission-msg').style.display = 'none';
 });
 </script>
 </body>

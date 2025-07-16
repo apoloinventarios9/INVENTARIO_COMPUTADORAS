@@ -9,6 +9,8 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
   <style>
     body { background: #f8f9fa; font-size: 13px; }
     .container { max-width: 900px; margin: 30px auto; }
@@ -252,8 +254,15 @@ document.addEventListener('click', function(e) {
 // Mostrar campo "Otro"
 function onTypeChange() {
   const type = document.getElementById('productType').value;
-  document.getElementById('otherType').style.display = (type === 'Otro') ? '' : 'none';
-  document.getElementById('otherType').required = (type === 'Otro');
+  const otherTypeElem = document.getElementById('otherType');
+  if (otherTypeElem) {
+    otherTypeElem.style.display = (type === 'Otro') ? '' : 'none';
+    otherTypeElem.required = (type === 'Otro');
+  }
+  // Actualiza la guía de ayuda si la tienes
+  if (typeof typeGuides !== 'undefined') {
+    document.getElementById('typeHelp').textContent = typeGuides[type] || '';
+  }
 }
 
 // Guardar registro
@@ -422,7 +431,38 @@ function openScanner(targetInputId) {
   barcodeScanTarget = targetInputId;
   document.getElementById('barcode-result').textContent = '';
   document.getElementById('camera-permission-msg').style.display = 'none';
-  $('#scannerModal').modal('show');
+
+  // Opciones para el usuario antes de abrir la cámara
+  Swal.fire({
+    title: 'Escanear código',
+    html: `
+      <div class="mb-2">¿Qué deseas escanear?</div>
+      <select id="cameraSelect" class="swal2-input">
+        <option value="environment">Cámara trasera (recomendada)</option>
+        <option value="user">Cámara frontal</option>
+      </select>
+      <div class="mt-2 text-left" style="font-size:13px;">
+        <b>¿No se abre la cámara?</b>
+        <ul style="margin-bottom:0;">
+          <li>Permite el acceso a la cámara cuando lo solicite el navegador.</li>
+          <li>Verifica que no haya otra app usando la cámara.</li>
+          <li>Prueba refrescando la página.</li>
+          <li>Si usas Chrome, asegúrate de estar en HTTPS o localhost.</li>
+        </ul>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Iniciar escaneo',
+    cancelButtonText: 'Cancelar',
+    preConfirm: () => {
+      return document.getElementById('cameraSelect').value;
+    }
+  }).then(result => {
+    if (result.isConfirmed) {
+      $('#scannerModal').data('cameraFacing', result.value);
+      $('#scannerModal').modal('show');
+    }
+  });
 }
 
 $('#scannerModal').on('shown.bs.modal', async function () {
@@ -432,24 +472,21 @@ $('#scannerModal').on('shown.bs.modal', async function () {
     barcodeStream.getTracks().forEach(track => track.stop());
     barcodeStream = null;
   }
-  // Inicializa el lector
   barcodeCodeReader = new ZXing.BrowserMultiFormatReader();
+  let facingMode = $('#scannerModal').data('cameraFacing') || 'environment';
   try {
-    // Solicita la cámara trasera si está disponible
     barcodeStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } },
+      video: { facingMode: { ideal: facingMode } },
       audio: false
     });
     video.srcObject = barcodeStream;
     video.setAttribute('playsinline', true);
     video.play();
 
-    // Escaneo en tiempo real
     barcodeCodeReader.decodeFromVideoDevice(null, 'barcodeVideo', (result, err) => {
       if (result) {
         document.getElementById('barcode-result').textContent = "Código detectado: " + result.text;
         document.getElementById(barcodeScanTarget).value = result.text;
-        // Detener escaneo y cerrar modal
         barcodeCodeReader.reset();
         if (barcodeStream) {
           barcodeStream.getTracks().forEach(track => track.stop());
@@ -464,6 +501,8 @@ $('#scannerModal').on('shown.bs.modal', async function () {
   } catch (e) {
     document.getElementById('camera-permission-msg').style.display = '';
     document.getElementById('barcode-result').textContent = '';
+    Swal.fire('Error', 'No se pudo acceder a la cámara.<br>Permite el acceso en tu navegador.<br>Si el problema persiste, revisa los permisos de Chrome o prueba con otro navegador.', 'error');
+    $('#scannerModal').modal('hide');
   }
 });
 

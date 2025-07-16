@@ -3,151 +3,257 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventario ERP - Activos y Accesorios</title>
+  <title>Inventario Juvenil - Activos y Accesorios</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
   <style>
-    body { background: #f8f9fa; font-size: 13px; }
-    .container { max-width: 900px; margin: 30px auto; }
-    .card { margin-bottom: 18px; }
-    .footer { text-align: center; color: #0066cc; font-size: 0.8rem; margin-top: 30px; }
-    .nav-tabs .nav-link.active { font-weight: bold; }
-    .suggestions { position: absolute; background: #fff; border: 1px solid #ccc; z-index: 10; width: 100%; max-height: 180px; overflow-y: auto; }
-    .suggestion-item { padding: 5px 10px; cursor: pointer; }
-    .suggestion-item:hover { background: #e9f7fe; }
-    .history-item { border-bottom: 1px solid #eee; padding: 8px 0; }
-    .history-item:last-child { border-bottom: none; }
-    .swal2-popup { font-size: 13px !important; }
-    .spinner-border { width: 2.5rem; height: 2.5rem; }
-    /* Responsive tweaks */
-@media (max-width: 767px) {
-  .form-row {
-    display: block;
-  }
-  .form-group {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-  .btn-block {
-    width: 100%;
-    display: block;
-  }
-}
+    body {
+      background: linear-gradient(135deg, #e0e7ef 0%, #f7fafc 100%);
+      font-size: 15px;
+      min-height: 100vh;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    }
+    .container-app {
+      max-width: 500px;
+      margin: 30px auto 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(60,80,120,0.10);
+      padding: 0;
+      overflow: hidden;
+    }
+    .app-header {
+      background: #4f8cff;
+      color: #fff;
+      padding: 24px 0 16px 0;
+      text-align: center;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.08);
+    }
+    .app-header h3 {
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 0;
+    }
+    .nav-tabs {
+      background: #f3f6fa;
+      border-bottom: none;
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 0;
+      padding: 0 10px;
+    }
+    .nav-tabs .nav-link {
+      border: none;
+      color: #4f8cff;
+      font-weight: 500;
+      border-radius: 12px 12px 0 0;
+      margin-right: 8px;
+      transition: background 0.2s;
+    }
+    .nav-tabs .nav-link.active {
+      background: #eaf2ff;
+      color: #2b5fae;
+      font-weight: 700;
+    }
+    .card {
+      border: none;
+      background: transparent;
+      margin-bottom: 0;
+    }
+    .card-body {
+      padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+    }
+    label {
+      font-weight: 500;
+      color: #2b5fae;
+      margin-bottom: 0.2rem;
+    }
+    .form-control, .form-select {
+      border-radius: 10px;
+      border: 1px solid #cfd8e3;
+      background: #f7fafc;
+      font-size: 1rem;
+      margin-bottom: 0.7rem;
+    }
+    .btn-primary, .btn-success {
+      background: #4f8cff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover, .btn-success:hover {
+      background: #2b5fae;
+    }
+    .btn-secondary {
+      background: #eaf2ff;
+      color: #2b5fae;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .btn-secondary:hover {
+      background: #d0e3ff;
+      color: #1a3e6e;
+    }
+    .history-item {
+      background: #f7fafc;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 4px rgba(60,80,120,0.06);
+      font-size: 0.98rem;
+      position: relative;
+    }
+    .history-item .btn {
+      font-size: 0.85rem;
+      padding: 2px 12px;
+      margin-top: 6px;
+    }
+    .footer {
+      text-align: center;
+      color: #4f8cff;
+      font-size: 0.9rem;
+      margin: 32px 0 10px 0;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 600px) {
+      .container-app {
+        max-width: 100vw;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .app-header {
+        border-radius: 0;
+      }
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <h4 class="text-center mb-4">Inventario ERP - Activos y Accesorios</h4>
-  <ul class="nav nav-tabs mb-3" id="mainTabs">
-    <li class="nav-item"><a class="nav-link active" href="#" onclick="showTab('import')">Importar</a></li>
-    <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('registro')">Registrar</a></li>
+<div class="container-app">
+  <div class="app-header">
+    <h3><i class="fas fa-laptop-code"></i> Inventario Juvenil</h3>
+    <div style="font-size:1rem;font-weight:400;opacity:.85;">Activos y Accesorios</div>
+  </div>
+  <ul class="nav nav-tabs mt-0 mb-3" id="mainTabs">
+    <li class="nav-item"><a class="nav-link active" href="#" onclick="showTab('registro')">Registrar</a></li>
     <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('historial')">Historial</a></li>
   </ul>
 
-  <!-- Importar -->
-  <div id="importTab" class="tab-content">
+  <!-- Registrar -->
+  <div id="registroTab" class="tab-content">
     <div class="card">
       <div class="card-body">
-        <input type="file" id="excelFile" class="form-control mb-2" accept=".xlsx, .xls">
-        <small class="text-muted">Plantilla: Código | Nombre | Tipo | Serie desde | Serie hasta | Estado | Ubicación</small>
-        <div id="importWarnings" class="text-danger mt-2"></div>
+        <form id="registroForm" autocomplete="off">
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label>Responsable <span style="color:#e74c3c">*</span></label>
+              <input type="text" id="responsable" class="form-control" required placeholder="Nombre completo del responsable">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label>Tipo de Equipo <span style="color:#e74c3c">*</span></label>
+              <select id="productType" class="form-control" onchange="onTypeChange()" required>
+                <option value="">Seleccione...</option>
+                <option value="Laptops">Laptops</option>
+                <option value="Computadoras de escritorio">Computadoras de escritorio</option>
+                <option value="Monitores adicionales">Monitores adicionales</option>
+                <option value="Teclados y Mouse">Teclados y Mouse</option>
+                <option value="No-breaks / UPS">No-breaks / UPS</option>
+                <option value="Impresoras multifunción">Impresoras multifunción</option>
+                <option value="Escáneres">Escáneres</option>
+                <option value="Lectores de código de barras">Lectores de código de barras</option>
+                <option value="Impresoras de etiquetas">Impresoras de etiquetas</option>
+                <option value="Terminales portátiles (PDA)">Terminales portátiles (PDA)</option>
+                <option value="Tablets / dispositivos móviles">Tablets / dispositivos móviles</option>
+                <option value="Relojes biométricos">Relojes biométricos</option>
+                <option value="Teléfonos IP / inalámbricos">Teléfonos IP / inalámbricos</option>
+                <option value="Radios de comunicación">Radios de comunicación</option>
+                <option value="Ruteadores / Switches">Ruteadores / Switches</option>
+                <option value="Cámaras de seguridad (CCTV)">Cámaras de seguridad (CCTV)</option>
+                <option value="Otro">Otro</option>
+              </select>
+              <small id="typeHelp" class="form-text text-muted"></small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-12" id="otherTypeGroup" style="display:none;">
+              <label>Especifique el tipo de equipo <span style="color:#e74c3c">*</span></label>
+              <input type="text" id="otherType" class="form-control" placeholder="Ejemplo: Proyector, Smart TV">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label>Nombre del Producto <span style="color:#e74c3c">*</span></label>
+              <input type="text" id="productName" class="form-control" required placeholder="Ejemplo: Dell Latitude 5420">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label>Código</label>
+              <input type="text" id="productCode" class="form-control" placeholder="Opcional">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label>Serie/IMEI <span style="color:#e74c3c">*</span></label>
+              <div class="input-group">
+                <input type="text" id="serieImei" class="form-control" required placeholder="Escanee o escriba">
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-secondary" onclick="openScanner('serieImei')" title="Escanear código">
+                    <i class="fas fa-barcode"></i>
+                  </button>
+                </div>
+              </div>
+              <small class="form-text text-muted">Permita el acceso a la cámara si se solicita.</small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Cantidad <span style="color:#e74c3c">*</span></label>
+              <input type="number" id="quantity" class="form-control" min="1" value="1" required>
+            </div>
+            <div class="form-group col-6">
+              <label>Ubicación</label>
+              <input type="text" id="location" class="form-control" placeholder="Ejemplo: Oficina 2do piso">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label>Estado del Producto <span style="color:#e74c3c">*</span></label>
+              <select id="productStatus" class="form-control" required>
+                <option value="">Seleccione...</option>
+                <option value="Operativo">Operativo</option>
+                <option value="En reparación">En reparación</option>
+                <option value="Dañado">Dañado</option>
+                <option value="Obsoleto">Obsoleto</option>
+                <option value="En almacén">En almacén</option>
+                <option value="Prestado">Prestado</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label>Notas</label>
+              <textarea id="notes" class="form-control" rows="2" placeholder="Observaciones adicionales"></textarea>
+            </div>
+          </div>
+          <input type="hidden" id="editIndex">
+          <button type="submit" class="btn btn-success btn-block mb-2"><i class="fas fa-save"></i> Guardar</button>
+          <button type="button" class="btn btn-secondary btn-block" onclick="clearForm()"><i class="fas fa-eraser"></i> Limpiar</button>
+        </form>
       </div>
     </div>
+    <div id="history-list" class="mt-3"></div>
   </div>
-
-  <!-- Registrar -->
-  <div id="registroTab" class="tab-content" style="display:none;">
-  <div class="card">
-    <div class="card-body">
-      <form id="registroForm" autocomplete="off">
-        <div class="form-row">
-          <div class="form-group col-md-6 col-12">
-            <label>Tipo de Equipo</label>
-            <select id="productType" class="form-control" onchange="onTypeChange()" required>
-              <option value="">Seleccione...</option>
-              <option value="Laptops">Laptops</option>
-              <option value="Computadoras de escritorio">Computadoras de escritorio</option>
-              <option value="Monitores adicionales">Monitores adicionales</option>
-              <option value="Teclados y Mouse">Teclados y Mouse</option>
-              <option value="No-breaks / UPS">No-breaks / UPS</option>
-              <option value="Impresoras multifunción">Impresoras multifunción</option>
-              <option value="Escáneres">Escáneres</option>
-              <option value="Lectores de código de barras">Lectores de código de barras</option>
-              <option value="Impresoras de etiquetas">Impresoras de etiquetas</option>
-              <option value="Terminales portátiles (PDA)">Terminales portátiles (PDA)</option>
-              <option value="Tablets / dispositivos móviles">Tablets / dispositivos móviles</option>
-              <option value="Relojes biométricos">Relojes biométricos</option>
-              <option value="Teléfonos IP / inalámbricos">Teléfonos IP / inalámbricos</option>
-              <option value="Radios de comunicación">Radios de comunicación</option>
-              <option value="Ruteadores / Switches">Ruteadores / Switches</option>
-              <option value="Cámaras de seguridad (CCTV)">Cámaras de seguridad (CCTV)</option>
-              <option value="Otro">Otro</option>
-            </select>
-            <small id="typeHelp" class="form-text text-muted"></small>
-          </div>
-          <div class="form-group col-md-6 col-12">
-            <label>Estado del Producto</label>
-            <select id="productStatus" class="form-control" required>
-              <option value="">Seleccione...</option>
-              <option value="Operativo">Operativo</option>
-              <option value="En reparación">En reparación</option>
-              <option value="Dañado">Dañado</option>
-              <option value="Obsoleto">Obsoleto</option>
-              <option value="En almacén">En almacén</option>
-              <option value="Prestado">Prestado</option>
-              <option value="Baja">Baja</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col-md-6 col-12">
-            <label>Nombre del Producto</label>
-            <input type="text" id="productName" class="form-control" required placeholder="Ejemplo: Dell Latitude 5420">
-          </div>
-          <div class="form-group col-md-6 col-12">
-            <label>Código</label>
-            <input type="text" id="productCode" class="form-control" placeholder="Opcional">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col-md-6 col-12">
-            <label>Serie/IMEI</label>
-            <div class="input-group">
-              <input type="text" id="serieImei" class="form-control" required placeholder="Escanee o escriba">
-              <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary" onclick="openScanner('serieImei')" title="Escanear código">
-                  <i class="fas fa-barcode"></i>
-                </button>
-              </div>
-            </div>
-            <small class="form-text text-muted">Permita el acceso a la cámara si se solicita.</small>
-          </div>
-          <div class="form-group col-md-3 col-6">
-            <label>Cantidad</label>
-            <input type="number" id="quantity" class="form-control" min="1" value="1">
-          </div>
-          <div class="form-group col-md-3 col-6">
-            <label>Ubicación</label>
-            <input type="text" id="location" class="form-control">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Notas</label>
-          <textarea id="notes" class="form-control" rows="2"></textarea>
-        </div>
-        <input type="hidden" id="editIndex">
-        <button type="submit" class="btn btn-success btn-block">Guardar</button>
-        <button type="button" class="btn btn-secondary btn-block mt-2" onclick="clearForm()">Limpiar</button>
-      </form>
-    </div>
-  </div>
-  <div id="history-list" class="mt-3"></div>
-</div>
 
   <!-- Historial -->
   <div id="historialTab" class="tab-content" style="display:none;">
@@ -160,174 +266,151 @@
       </div>
     </div>
   </div>
-
   <div class="footer">Desarrollado por: © 2025 Miguel Fajardo - Analista de Inventarios</div>
 </div>
+
+<!-- Modal para escanear código con cámara -->
+<div class="modal fade" id="scannerModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-size: 14px;">Escanear código</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body text-center">
+        <video id="barcodeVideo" autoplay playsinline style="width:100%;max-height:300px;border:1px solid #ccc;border-radius:6px;"></video>
+        <canvas id="barcodeCanvas" style="display:none;"></canvas>
+        <div id="camera-permission-msg" class="text-danger mt-2" style="display:none;">
+          Debe permitir el acceso a la cámara para escanear el código.
+        </div>
+        <div id="barcode-result" class="mt-2 font-weight-bold text-success"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" style="font-size: 12px;">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@zxing/library@0.19.2/umd/index.min.js"></script>
 <script>
-let products = [];
 let counts = JSON.parse(localStorage.getItem('inventoryCounts')) || [];
+
+const typeGuides = {
+  "Laptops": "Ejemplo: Dell Latitude 5420, Lenovo ThinkPad, HP EliteBook",
+  "Computadoras de escritorio": "Ejemplo: CPU Dell Optiplex, HP ProDesk, con monitor, mouse y teclado",
+  "Monitores adicionales": "Ejemplo: Monitor Samsung 24'', LG LED, Dell LCD",
+  "Teclados y Mouse": "Ejemplo: Teclado Logitech inalámbrico, Mouse HP USB",
+  "No-breaks / UPS": "Ejemplo: APC 650VA, Forza 1000VA",
+  "Impresoras multifunción": "Ejemplo: HP LaserJet Pro MFP, Epson EcoTank",
+  "Escáneres": "Ejemplo: Epson Perfection, Canon Lide",
+  "Lectores de código de barras": "Ejemplo: Honeywell Voyager, Zebra DS2208",
+  "Impresoras de etiquetas": "Ejemplo: Zebra GK420t, Brother QL-800",
+  "Terminales portátiles (PDA)": "Ejemplo: Zebra TC21, Honeywell Dolphin",
+  "Tablets / dispositivos móviles": "Ejemplo: Samsung Galaxy Tab, iPad",
+  "Relojes biométricos": "Ejemplo: ZKTeco MB360, Anviz FaceDeep",
+  "Teléfonos IP / inalámbricos": "Ejemplo: Cisco SPA504G, Panasonic KX-TG",
+  "Radios de comunicación": "Ejemplo: Motorola Talkabout, Kenwood TK-3402",
+  "Ruteadores / Switches": "Ejemplo: Cisco Catalyst 2960, TP-Link Archer",
+  "Cámaras de seguridad (CCTV)": "Ejemplo: Hikvision DS-2CD, Dahua HDCVI",
+  "Otro": "Describa el producto lo más detallado posible"
+};
 
 // Tabs
 function showTab(tab) {
   document.querySelectorAll('.tab-content').forEach(e => e.style.display = 'none');
   document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
   document.getElementById(tab + 'Tab').style.display = '';
-  let idx = {import:0,registro:1,historial:2}[tab];
+  let idx = {registro:0,historial:1}[tab];
   document.querySelectorAll('.nav-link')[idx].classList.add('active');
   if(tab==='historial') loadFullHistory();
-  if(tab==='registro') setTimeout(()=>document.getElementById('productCode').focus(),100);
+  if(tab==='registro') setTimeout(()=>document.getElementById('responsable').focus(),100);
 }
-
-// Importar Excel
-document.getElementById('excelFile').addEventListener('change', function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  readXlsxFile(file).then((rows) => {
-    let warnings = [];
-    products = [];
-    const tiposValidos = ['cpu','monitor','impresora','tv','escáner','laptop','all-in-one','otro'];
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const code = row[0]?.toString().trim() || '';
-      const name = row[1]?.toString().trim() || '';
-      let type = (row[2]?.toString().trim() || 'CPU');
-      const serieDesde = row[3]?.toString().trim() || '';
-      const serieHasta = row[4]?.toString().trim() || '';
-      const estado = row[5]?.toString().trim() || '';
-      const ubicacion = row[6]?.toString().trim() || '';
-      if (tiposValidos.includes(type.toLowerCase())) {
-        if (serieDesde && serieHasta) {
-          if (isConsecutive(serieDesde, serieHasta)) {
-            let start = BigInt(serieDesde), end = BigInt(serieHasta);
-            for (let s = start; s <= end; s++) {
-              products.push({ code, name, type, serie: s.toString(), estado, ubicacion });
-            }
-          } else {
-            warnings.push(`No correlativo: ${code} (${serieDesde} - ${serieHasta})`);
-          }
-        } else if (serieDesde) {
-          products.push({ code, name, type, serie: serieDesde, estado, ubicacion });
-        }
-      } else {
-        products.push({ code, name, type: 'Otro', serie: '', estado, ubicacion });
-      }
-    }
-    localStorage.setItem('inventoryProducts', JSON.stringify(products));
-    document.getElementById('importWarnings').innerHTML = warnings.length ? warnings.join('<br>') : '';
-    Swal.fire('Éxito', `Se importaron ${products.length} registros`, 'success');
-  }).catch(error => {
-    Swal.fire('Error', 'Error al importar el archivo', 'error');
-  });
-});
-function isConsecutive(from, to) {
-  try {
-    let a = BigInt(from), b = BigInt(to);
-    return b >= a && (b - a) < 10000;
-  } catch { return false; }
-}
-
-// Autocompletar código
-document.getElementById('productCode').addEventListener('input', function() {
-  const val = this.value.trim().toLowerCase();
-  const sugDiv = document.getElementById('codeSuggestions');
-  if (!val || products.length === 0) { sugDiv.style.display = 'none'; return; }
-  const matches = products.filter(p => p.code.toLowerCase().includes(val)).slice(0, 8);
-  if (matches.length === 0) { sugDiv.style.display = 'none'; return; }
-  sugDiv.innerHTML = matches.map(p => `<div class="suggestion-item" onclick="selectCodeSuggestion('${p.code}')">${p.code} - ${p.name}</div>`).join('');
-  sugDiv.style.display = 'block';
-});
-window.selectCodeSuggestion = function(code) {
-  document.getElementById('productCode').value = code;
-  document.getElementById('codeSuggestions').style.display = 'none';
-  const prod = products.find(p => p.code === code);
-  if (prod) {
-    document.getElementById('productName').value = prod.name;
-    document.getElementById('productType').value = prod.type;
-    onTypeChange();
-  }
-};
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('#productCode') && !e.target.closest('#codeSuggestions')) {
-    document.getElementById('codeSuggestions').style.display = 'none';
-  }
-});
 
 // Mostrar campo "Otro"
 function onTypeChange() {
   const type = document.getElementById('productType').value;
+  const otherTypeGroup = document.getElementById('otherTypeGroup');
   const otherTypeElem = document.getElementById('otherType');
-  if (otherTypeElem) {
-    otherTypeElem.style.display = (type === 'Otro') ? '' : 'none';
+  if (otherTypeGroup && otherTypeElem) {
+    otherTypeGroup.style.display = (type === 'Otro') ? '' : 'none';
     otherTypeElem.required = (type === 'Otro');
   }
-  if (typeof typeGuides !== 'undefined') {
-    document.getElementById('typeHelp').textContent = typeGuides[type] || '';
-  }
+  document.getElementById('typeHelp').textContent = typeGuides[type] || '';
 }
 
 // Guardar registro
 document.getElementById('registroForm').addEventListener('submit', function(e){
   e.preventDefault();
-  const code = document.getElementById('productCode').value.trim();
-  const name = document.getElementById('productName').value.trim();
+  const responsable = document.getElementById('responsable').value.trim();
   let type = document.getElementById('productType').value;
   const otherTypeElem = document.getElementById('otherType');
-  const otherType = otherTypeElem ? otherTypeElem.value.trim() : '';
+  const otherType = otherTypeElem && otherTypeElem.offsetParent !== null ? otherTypeElem.value.trim() : '';
+  const name = document.getElementById('productName').value.trim();
+  const code = document.getElementById('productCode').value.trim();
   const serie = document.getElementById('serieImei').value.trim();
   const quantity = parseInt(document.getElementById('quantity').value) || 1;
   const location = document.getElementById('location').value.trim();
+  const status = document.getElementById('productStatus').value;
   const notes = document.getElementById('notes').value.trim();
   const editIndex = document.getElementById('editIndex').value;
 
+  if (!responsable) return Swal.fire('Error', 'Debe ingresar el responsable', 'error');
   if (type === 'Otro') {
     if (!otherType) return Swal.fire('Error', 'Debe especificar el tipo de equipo', 'error');
     type = otherType;
   }
-  if (!code || !name) return Swal.fire('Error', 'Complete código y nombre', 'error');
+  if (!name) return Swal.fire('Error', 'Debe ingresar el nombre del producto', 'error');
   if (!serie) return Swal.fire('Error', 'Ingrese número de serie', 'error');
+  if (!status) return Swal.fire('Error', 'Seleccione el estado del producto', 'error');
+
   if (editIndex) {
     // Editar registro existente
-    counts[editIndex] = { code, name, type, serie, quantity, location, notes, timestamp: new Date().toISOString() };
+    counts[editIndex] = { responsable, code, name, type, serie, quantity, location, status, notes, timestamp: new Date().toISOString() };
     document.getElementById('editIndex').value = '';
     Swal.fire('Éxito', 'Registro editado', 'success');
   } else {
     // Nuevo registro
-    if (counts.some(c => c.code === code && c.serie === serie && c.type === type)) {
-      return Swal.fire('Error', 'Ya existe este número de serie registrado', 'error');
+    if (counts.some(c => c.serie === serie && c.type === type)) {
+      return Swal.fire('Error', 'Ya existe este número de serie registrado para ese tipo', 'error');
     }
-    counts.push({ code, name, type, serie, quantity, location, notes, timestamp: new Date().toISOString() });
+    counts.push({ responsable, code, name, type, serie, quantity, location, status, notes, timestamp: new Date().toISOString() });
     Swal.fire('Éxito', 'Registro guardado', 'success');
   }
   localStorage.setItem('inventoryCounts', JSON.stringify(counts));
   clearForm();
-  loadHistory(code, serie);
+  loadHistory();
 });
+
 function clearForm() {
   document.getElementById('registroForm').reset();
-  document.getElementById('productType').value = 'CPU';
-  document.getElementById('otherType').style.display = 'none';
+  document.getElementById('productType').value = '';
+  document.getElementById('otherTypeGroup').style.display = 'none';
   document.getElementById('history-list').innerHTML = '';
 }
 
-// Historial parcial
-function loadHistory(code, serie = '') {
+// Historial parcial (últimos 5)
+function loadHistory() {
   const historyList = document.getElementById('history-list');
   historyList.innerHTML = '';
-  const filtered = counts.filter(c => c.code === code && (!serie || c.serie === serie));
-  if (filtered.length === 0) {
+  if (counts.length === 0) {
     historyList.innerHTML = '<div class="text-muted text-center">No hay registros previos</div>';
     return;
   }
-  filtered.forEach((c, i) => {
+  counts.slice(-5).reverse().forEach((c, i) => {
     const div = document.createElement('div');
     div.className = 'history-item';
     div.innerHTML = `
-      <div><strong>${c.name}</strong> (${c.code})</div>
-      <div>Tipo: ${c.type} ${c.serie ? '| IMEI/SERIE: ' + c.serie : ''}</div>
-      <div>Cantidad: ${c.quantity} | Ubicación: ${c.location}</div>
+      <div><strong>${c.name}</strong> (${c.type})</div>
+      <div><span style="color:#4f8cff"><i class="fas fa-user"></i> ${c.responsable}</span></div>
+      <div>Serie/IMEI: <b>${c.serie}</b> ${c.code ? '| Código: <b>' + c.code + '</b>' : ''}</div>
+      <div>Cantidad: ${c.quantity} | Estado: ${c.status}</div>
+      <div>Ubicación: ${c.location || '-'}</div>
       <div>Notas: ${c.notes || '-'}</div>
       <div><small>${new Date(c.timestamp).toLocaleString('es-PE')}</small></div>
-      <button class="btn btn-sm btn-primary mt-1" onclick="editRecord(${i})">Editar</button>
+      <button class="btn btn-sm btn-primary mt-1" onclick="editRecord(${counts.length - 1 - i})">Editar</button>
     `;
     historyList.appendChild(div);
   });
@@ -341,18 +424,18 @@ function loadFullHistory() {
     historyList.innerHTML = '<p class="text-muted text-center">No hay registros en el historial</p>';
     return;
   }
-  counts.slice().reverse().forEach(c => {
+  counts.slice().reverse().forEach((c, idx) => {
     const div = document.createElement('div');
     div.className = 'history-item';
     div.innerHTML = `
-      <div><strong>Código:</strong> ${c.code}</div>
-      <div><strong>Nombre:</strong> ${c.name}</div>
-      <div><strong>Tipo:</strong> ${c.type}</div>
-      <div><strong>Serie:</strong> ${c.serie || '-'}</div>
-      <div><strong>Cantidad:</strong> ${c.quantity}</div>
-      <div><strong>Ubicación:</strong> ${c.location}</div>
-      <div><strong>Fecha:</strong> ${new Date(c.timestamp).toLocaleString('es-PE')}</div>
-      <div><strong>Notas:</strong> ${c.notes || '-'}</div>
+      <div><strong>${c.name}</strong> (${c.type})</div>
+      <div><span style="color:#4f8cff"><i class="fas fa-user"></i> ${c.responsable}</span></div>
+      <div>Serie/IMEI: <b>${c.serie}</b> ${c.code ? '| Código: <b>' + c.code + '</b>' : ''}</div>
+      <div>Cantidad: ${c.quantity} | Estado: ${c.status}</div>
+      <div>Ubicación: ${c.location || '-'}</div>
+      <div>Notas: ${c.notes || '-'}</div>
+      <div><small>${new Date(c.timestamp).toLocaleString('es-PE')}</small></div>
+      <button class="btn btn-sm btn-primary mt-1" onclick="editRecord(${counts.length - 1 - idx})">Editar</button>
     `;
     historyList.appendChild(div);
   });
@@ -366,12 +449,14 @@ function filterHistory() {
 function downloadHistory() {
   if (counts.length === 0) return Swal.fire('Advertencia', 'No hay registros para descargar', 'warning');
   const worksheetData = counts.map(c => ({
+    'Responsable': c.responsable,
     'Código': c.code,
     'Nombre': c.name,
     'Tipo': c.type,
     'IMEI/SERIE': c.serie,
     'Cantidad': c.quantity,
     'Ubicación': c.location,
+    'Estado': c.status,
     'Notas': c.notes || '',
     'Fecha': new Date(c.timestamp).toLocaleString('es-PE')
   }));
@@ -398,56 +483,34 @@ function deleteHistory() {
   });
 }
 window.addEventListener('DOMContentLoaded', () => {
-  // Cargar productos si existen
-  if (localStorage.getItem('inventoryProducts')) {
-    products = JSON.parse(localStorage.getItem('inventoryProducts'));
-  }
-  showTab('import');
+  showTab('registro');
+  loadHistory();
 });
 
 function editRecord(index) {
   const c = counts[index];
-  document.getElementById('productCode').value = c.code;
-  document.getElementById('productName').value = c.name;
+  document.getElementById('responsable').value = c.responsable;
   document.getElementById('productType').value = c.type;
   onTypeChange();
+  if (document.getElementById('otherType') && c.type !== '' && !document.getElementById('productType').querySelector(`option[value="${c.type}"]`)) {
+    document.getElementById('otherType').value = c.type;
+    document.getElementById('otherTypeGroup').style.display = '';
+  } else if(document.getElementById('otherType')) {
+    document.getElementById('otherType').value = '';
+    document.getElementById('otherTypeGroup').style.display = 'none';
+  }
+  document.getElementById('productName').value = c.name;
+  document.getElementById('productCode').value = c.code || '';
   document.getElementById('serieImei').value = c.serie;
   document.getElementById('quantity').value = c.quantity;
   document.getElementById('location').value = c.location;
+  document.getElementById('productStatus').value = c.status;
   document.getElementById('notes').value = c.notes;
   document.getElementById('editIndex').value = index;
   showTab('registro');
 }
-</script>
 
-<!-- Modal para escanear código con cámara (nuevo enfoque) -->
-<div class="modal fade" id="scannerModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" style="font-size: 14px;">Escanear código</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body text-center">
-        <video id="barcodeVideo" autoplay playsinline style="width:100%;max-height:300px;border:1px solid #ccc;border-radius:6px;"></video>
-        <canvas id="barcodeCanvas" style="display:none;"></canvas>
-        <div id="camera-permission-msg" class="text-danger mt-2" style="display:none;">
-          Debe permitir el acceso a la cámara para escanear el código.
-        </div>
-        <div id="barcode-result" class="mt-2 font-weight-bold text-success"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" style="font-size: 12px;">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Incluye la librería ZXing para escaneo de códigos de barras y QR -->
-<script src="https://unpkg.com/@zxing/library@0.19.2/umd/index.min.js"></script>
-<script>
+// Escaneo de código con cámara
 let barcodeStream = null;
 let barcodeCodeReader = null;
 let barcodeScanTarget = null;
@@ -457,11 +520,10 @@ function openScanner(targetInputId) {
   document.getElementById('barcode-result').textContent = '';
   document.getElementById('camera-permission-msg').style.display = 'none';
 
-  // Opciones para el usuario antes de abrir la cámara
   Swal.fire({
     title: 'Escanear código',
     html: `
-      <div class="mb-2">¿Qué deseas escanear?</div>
+      <div class="mb-2">¿Qué cámara deseas usar?</div>
       <select id="cameraSelect" class="swal2-input">
         <option value="environment">Cámara trasera (recomendada)</option>
         <option value="user">Cámara frontal</option>
@@ -492,7 +554,6 @@ function openScanner(targetInputId) {
 
 $('#scannerModal').on('shown.bs.modal', async function () {
   const video = document.getElementById('barcodeVideo');
-  // Detén cualquier stream anterior
   if (barcodeStream) {
     barcodeStream.getTracks().forEach(track => track.stop());
     barcodeStream = null;

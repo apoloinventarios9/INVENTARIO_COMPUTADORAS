@@ -11,22 +11,46 @@
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
   <style>
-    body {
-      background: linear-gradient(135deg, #e0e7ef 0%, #f7fafc 100%);
-      font-size: 15px;
-      min-height: 100vh;
-      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-    }
+  body {
+    background: linear-gradient(135deg, #e0e7ef 0%, #f7fafc 100%);
+    font-size: 15px;
+    min-height: 100vh;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  }
+  .container-app {
+    max-width: 500px;
+    margin: 30px auto 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(60,80,120,0.10);
+    padding: 0;
+    overflow: hidden;
+    transition: max-width 0.3s;
+  }
+  @media (min-width: 1000px) {
     .container-app {
-      max-width: 500px;
-      margin: 30px auto 0 auto;
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 4px 24px rgba(60,80,120,0.10);
-      padding: 0;
-      overflow: hidden;
+      max-width: 850px;
+    }
+    .card-body {
+      padding: 2.2rem 2.5rem 2rem 2.5rem;
+    }
+    .history-item {
+      font-size: 1.08rem;
+      padding: 18px 22px;
+    }
+  }
+  @media (max-width: 600px) {
+    .container-app {
+      max-width: 100vw;
+      margin: 0;
+      border-radius: 0;
+      box-shadow: none;
     }
     .app-header {
+      border-radius: 0;
+    }
+  }
+  .app-header {
       background: #4f8cff;
       color: #fff;
       padding: 24px 0 16px 0;

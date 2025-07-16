@@ -140,6 +140,7 @@
           <label>Notas</label>
           <textarea id="notes" class="form-control" rows="2"></textarea>
         </div>
+        <input type="hidden" id="editIndex">
         <button type="submit" class="btn btn-success btn-block">Guardar</button>
         <button type="button" class="btn btn-secondary btn-block mt-2" onclick="clearForm()">Limpiar</button>
       </form>
@@ -259,7 +260,6 @@ function onTypeChange() {
     otherTypeElem.style.display = (type === 'Otro') ? '' : 'none';
     otherTypeElem.required = (type === 'Otro');
   }
-  // Actualiza la guía de ayuda si la tienes
   if (typeof typeGuides !== 'undefined') {
     document.getElementById('typeHelp').textContent = typeGuides[type] || '';
   }
@@ -271,11 +271,13 @@ document.getElementById('registroForm').addEventListener('submit', function(e){
   const code = document.getElementById('productCode').value.trim();
   const name = document.getElementById('productName').value.trim();
   let type = document.getElementById('productType').value;
-  const otherType = document.getElementById('otherType').value.trim();
+  const otherTypeElem = document.getElementById('otherType');
+  const otherType = otherTypeElem ? otherTypeElem.value.trim() : '';
   const serie = document.getElementById('serieImei').value.trim();
   const quantity = parseInt(document.getElementById('quantity').value) || 1;
   const location = document.getElementById('location').value.trim();
   const notes = document.getElementById('notes').value.trim();
+  const editIndex = document.getElementById('editIndex').value;
 
   if (type === 'Otro') {
     if (!otherType) return Swal.fire('Error', 'Debe especificar el tipo de equipo', 'error');
@@ -283,12 +285,20 @@ document.getElementById('registroForm').addEventListener('submit', function(e){
   }
   if (!code || !name) return Swal.fire('Error', 'Complete código y nombre', 'error');
   if (!serie) return Swal.fire('Error', 'Ingrese número de serie', 'error');
-  if (counts.some(c => c.code === code && c.serie === serie && c.type === type)) {
-    return Swal.fire('Error', 'Ya existe este número de serie registrado', 'error');
+  if (editIndex) {
+    // Editar registro existente
+    counts[editIndex] = { code, name, type, serie, quantity, location, notes, timestamp: new Date().toISOString() };
+    document.getElementById('editIndex').value = '';
+    Swal.fire('Éxito', 'Registro editado', 'success');
+  } else {
+    // Nuevo registro
+    if (counts.some(c => c.code === code && c.serie === serie && c.type === type)) {
+      return Swal.fire('Error', 'Ya existe este número de serie registrado', 'error');
+    }
+    counts.push({ code, name, type, serie, quantity, location, notes, timestamp: new Date().toISOString() });
+    Swal.fire('Éxito', 'Registro guardado', 'success');
   }
-  counts.push({ code, name, type, serie, quantity, location, notes, timestamp: new Date().toISOString() });
   localStorage.setItem('inventoryCounts', JSON.stringify(counts));
-  Swal.fire('Éxito', 'Registro guardado', 'success');
   clearForm();
   loadHistory(code, serie);
 });
@@ -308,7 +318,7 @@ function loadHistory(code, serie = '') {
     historyList.innerHTML = '<div class="text-muted text-center">No hay registros previos</div>';
     return;
   }
-  filtered.forEach(c => {
+  filtered.forEach((c, i) => {
     const div = document.createElement('div');
     div.className = 'history-item';
     div.innerHTML = `
@@ -317,6 +327,7 @@ function loadHistory(code, serie = '') {
       <div>Cantidad: ${c.quantity} | Ubicación: ${c.location}</div>
       <div>Notas: ${c.notes || '-'}</div>
       <div><small>${new Date(c.timestamp).toLocaleString('es-PE')}</small></div>
+      <button class="btn btn-sm btn-primary mt-1" onclick="editRecord(${i})">Editar</button>
     `;
     historyList.appendChild(div);
   });
@@ -393,6 +404,20 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   showTab('import');
 });
+
+function editRecord(index) {
+  const c = counts[index];
+  document.getElementById('productCode').value = c.code;
+  document.getElementById('productName').value = c.name;
+  document.getElementById('productType').value = c.type;
+  onTypeChange();
+  document.getElementById('serieImei').value = c.serie;
+  document.getElementById('quantity').value = c.quantity;
+  document.getElementById('location').value = c.location;
+  document.getElementById('notes').value = c.notes;
+  document.getElementById('editIndex').value = index;
+  showTab('registro');
+}
 </script>
 
 <!-- Modal para escanear código con cámara (nuevo enfoque) -->
